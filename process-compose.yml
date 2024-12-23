@@ -1,0 +1,32 @@
+version: "0.5"
+
+processes:
+  api:
+    working_dir: api
+    command: bun run watch
+    environment:
+      - "DATABASE_CONNSTR=postgres://tmapi:Passw0rd!@localhost:5432/tmapi?pool_max_conns=10"
+      - "ADMIN_KEY=developer-test-key"
+      - "HOST=localhost"
+      - "DEBUG=true"
+      - "TMIO_URL=http://localhost:8100"
+  db:
+    working_dir: .
+    command: docker compose up db
+    shutdown:
+      command: docker compose stop db
+  tmiosim:
+    working_dir: .
+    command: docker compose up tmiosim
+    shutdown:
+      command: docker compose stop tmiosim
+  # unit:
+  #   working_dir: api
+  #   command: bun run test
+  # test:
+  #   working_dir: test
+  #   command: bun test --watch
+  #   depends_on:
+  #     api:
+  #     db:
+  #     tmiosim:
