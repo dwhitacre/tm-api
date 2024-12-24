@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8081
 USER bun
 
 ENTRYPOINT ["bun", "run", "index.ts"]
