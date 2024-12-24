@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: tm-api
                   key: DATABASE_CONNSTR
+            - name: DATABASE_SSL
+              value: "true"
             - name: ADMIN_KEY
               valueFrom:
                 secretKeyRef:
@@ -45,6 +47,8 @@ spec:
                   key: ADMIN_KEY
             - name: TMIO_URL
               value: {{ .Values.tmioUrl }}
+            - name: HOST
+              value: "0.0.0.0"
           ports:
             - name: api-http
               containerPort: 8081
