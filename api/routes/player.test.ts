@@ -12,13 +12,16 @@ beforeEach(() => {
       get: mock(async () => []),
       upsert: mock(async () => {}),
       getAll: mock(async () => []),
+      upsertOverrides: mock(async () => {}),
     },
     tmio: { getPlayer: mock(async () => ({})) },
   } as unknown as Services;
 });
 
 test("should handle non get/put method", async () => {
-  const request = new Request("http://sub.domain.example", { method: "post" });
+  const request = new Request("http://sub.domain.example", {
+    method: "delete",
+  });
   const apiRequest = new ApiRequest(request, services);
 
   const response = await player.handle(apiRequest);
@@ -100,4 +103,16 @@ test("should handle put player.upsert throws", async () => {
 
   const response = await player.handle(apiRequest);
   expect(response.complete().status).toEqual(400);
+});
+
+test("should handle post", async () => {
+  process.env.ADMIN_KEY = "testkey";
+  const request = new Request("http://sub.domain.example?api-key=testkey", {
+    method: "post",
+    body: '{ "accountId": "uid" }',
+  });
+  const apiRequest = new ApiRequest(request, services);
+
+  const response = await player.handle(apiRequest);
+  expect(response.complete().status).toEqual(200);
 });

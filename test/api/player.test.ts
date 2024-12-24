@@ -9,7 +9,11 @@ const playerCreate = ({
   accountId = faker.string.uuid(),
   body,
   method = "PUT",
-}: { accountId?: string; body?: any; method?: string } = {}) => {
+}: {
+  accountId?: string;
+  body?: any;
+  method?: string;
+} = {}) => {
   return fetch("http://localhost:8081/api/player", {
     body: JSON.stringify(body ?? { accountId }),
     method,
@@ -19,9 +23,24 @@ const playerCreate = ({
   });
 };
 
-const playerCreateMany = async (accountIds = [], idx = 0): Promise<void> => {
-  await playerCreate({ accountId: accountIds[idx] });
-  idx < accountIds.length - 1 ? playerCreateMany(accountIds, ++idx) : null;
+const playerOverride = ({
+  accountId = faker.string.uuid(),
+  body,
+  method = "POST",
+  overrides = {},
+}: {
+  accountId?: string;
+  body?: any;
+  method?: string;
+  overrides?: any;
+} = {}) => {
+  return fetch("http://localhost:8081/api/player", {
+    body: JSON.stringify(body ?? { accountId, ...overrides }),
+    method,
+    headers: {
+      "x-api-key": "developer-test-key",
+    },
+  });
 };
 
 test("get player dne", async () => {
@@ -39,7 +58,7 @@ test("create player no adminkey", async () => {
 });
 
 test("create player bad method", async () => {
-  const response = await playerCreate({ method: "POST" });
+  const response = await playerCreate({ method: "DELETE" });
   expect(response.status).toEqual(405);
 });
 
@@ -189,20 +208,72 @@ test("create player repeat is an update", async () => {
   expect(getJson2.name.length).toBeGreaterThan(0);
 });
 
-test.skip("get player with overrides", async () => {
+test("get player with overrides", async () => {
   const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
-  const response = await playerCreate({
-    accountId,
-  });
-
-  expect(response.status).toEqual(201);
-
   const name = faker.internet.username();
   const image = "assets/images/override.jpg";
   const twitch = "override.tv";
   const discord = "override.discord";
 
-  // TODO update player overrides
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await playerOverride({
+    accountId,
+    overrides: {
+      name,
+      image,
+      twitch,
+      discord,
+    },
+  });
+
+  expect(response.status).toEqual(200);
+
+  const getResponse = await playerGet(accountId);
+  expect(getResponse).toBeDefined();
+  expect(getResponse.status).toEqual(200);
+
+  const getJson = await getResponse.json();
+  expect(getJson.accountId).toEqual(accountId);
+  expect(getJson.name).toEqual(name);
+  expect(getJson.image).toEqual(image);
+  expect(getJson.twitch).toEqual(twitch);
+  expect(getJson.discord).toEqual(discord);
+});
+
+test("get player with overrides update", async () => {
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  const name = faker.internet.username();
+  const image = "assets/images/override.jpg";
+  const twitch = "override.tv";
+  const discord = "override.discord";
+
+  await playerCreate({
+    accountId,
+  });
+  await playerOverride({
+    accountId,
+    overrides: {
+      name: "name",
+      image: "image",
+      twitch: "twitch",
+      discord: "discord",
+    },
+  });
+
+  const response = await playerOverride({
+    accountId,
+    overrides: {
+      name,
+      image,
+      twitch,
+      discord,
+    },
+  });
+
+  expect(response.status).toEqual(200);
 
   const getResponse = await playerGet(accountId);
   expect(getResponse).toBeDefined();
