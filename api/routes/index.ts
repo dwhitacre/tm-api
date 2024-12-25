@@ -4,6 +4,7 @@ import ApiResponse from "../domain/apiresponse";
 import admin from "./admin";
 import player from "./player";
 import ready from "./ready";
+import leaderboard from "./leaderboard";
 
 function getHandle(req: ApiRequest): (req: ApiRequest) => Promise<ApiResponse> {
   if (req.checkPath(["/ready", "/api/ready"])) return ready.handle;
@@ -11,6 +12,10 @@ function getHandle(req: ApiRequest): (req: ApiRequest) => Promise<ApiResponse> {
 
   if (req.checkPath("/api/player/{accountId}")) return player.pathParamHandle;
   if (req.checkPath("/api/player")) return player.handle;
+
+  if (req.checkPath("/api/leaderboard/{leaderboardId}"))
+    return leaderboard.pathParamHandle;
+  if (req.checkPath("/api/leaderboard")) return leaderboard.handle;
 
   return Route.defaultHandle;
 }

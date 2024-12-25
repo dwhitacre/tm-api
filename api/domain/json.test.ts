@@ -8,6 +8,7 @@ test.each([
   [{ KEY: "value" }, { key: "value" }],
   [{ KEY: null }, { key: null }],
   [{ KEY: undefined }, { key: undefined }],
+  [{ KEY: new Date(123) }, { key: new Date(123) }],
   [{ KEY: false }, { key: false }],
   [{ keY: "value" }, { key: "value" }],
   [{ key: "VALUE" }, { key: "VALUE" }],

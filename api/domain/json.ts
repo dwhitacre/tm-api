@@ -9,6 +9,7 @@ export default class Json {
   static lowercaseKeys(json: JsonAny): JsonAny {
     if (Array.isArray(json)) return json.map<JsonObject>(Json.lowercaseKeys);
     if (typeof json !== "object") return json;
+    if (json instanceof Date) return json;
     if (json == undefined) return json;
 
     return Object.fromEntries(

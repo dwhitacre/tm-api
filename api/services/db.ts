@@ -33,11 +33,11 @@ export class Db {
   }
 
   async insert(sql: string, params: Array<unknown>) {
-    return this.execute(sql, params);
+    return this.execute(sql + " returning *", params);
   }
 
   async update(sql: string, params: Array<unknown>) {
-    return this.execute(sql, params);
+    return this.execute(sql + " returning *", params);
   }
 
   async delete(sql: string, params: Array<unknown>) {
@@ -48,13 +48,15 @@ export class Db {
     insertFn: (...args: Array<any>) => Promise<QueryResult<any>>,
     updateFn: (...args: Array<any>) => Promise<QueryResult<any>>,
     ...args: Array<any>
-  ): Promise<void> {
+  ): Promise<QueryResult<any>> {
+    let result;
     try {
-      await insertFn(...args);
+      result = await insertFn(...args);
     } catch (error) {
-      const result = await updateFn(...args);
+      result = await updateFn(...args);
       if (result.rowCount == null || result.rowCount < 1) throw error;
     }
+    return result;
   }
 
   async transaction(statements: Array<[string, Array<any> | undefined]>) {
