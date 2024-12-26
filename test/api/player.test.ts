@@ -5,7 +5,7 @@ const playerGet = (accountId: string) => {
   return fetch(`http://localhost:8081/api/player/${accountId}`);
 };
 
-const playerCreate = ({
+export const playerCreate = ({
   accountId = faker.string.uuid(),
   body,
   method = "PUT",

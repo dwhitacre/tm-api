@@ -131,13 +131,13 @@ export class ApiRequest {
         | ((json: JsonArray) => InstanceType<T>)
         | ((json: JsonAny) => InstanceType<T>);
     }
-  >(domain: T): Promise<InstanceType<T> | undefined> {
+  >(domain: T, merge: JsonObject = {}): Promise<InstanceType<T> | undefined> {
     if (typeof domain.fromJson !== "function") return undefined;
 
     let json;
     try {
       json = await this.raw.json();
-      return domain.fromJson(json);
+      return domain.fromJson(Object.assign(json, merge));
     } catch (error) {
       this.logger.warn("Failed to parse domain", { json, error });
       return undefined;

@@ -1,18 +1,47 @@
 import { expect, test } from "bun:test";
 import { faker } from "@faker-js/faker";
+import { playerCreate } from "./player.test";
 
 const leaderboardGet = (leaderboardId: string) => {
   return fetch(`http://localhost:8081/api/leaderboard/${leaderboardId}`);
 };
 
 const leaderboardCreate = ({
-  body,
+  body = {},
   method = "PUT",
 }: {
   body?: any;
   method?: string;
 } = {}) => {
   return fetch("http://localhost:8081/api/leaderboard", {
+    body: JSON.stringify(body),
+    method,
+    headers: {
+      "x-api-key": "developer-test-key",
+    },
+  });
+};
+
+const leaderboardScoreGet = ({
+  leaderboardId = 999999999,
+  accountId = faker.string.uuid(),
+}: {
+  leaderboardId?: number;
+  accountId?: string;
+  body?: any;
+  method?: string;
+} = {}) => {
+  return fetch(
+    `http://localhost:8081/api/leaderboard/${leaderboardId}/score/${accountId}`
+  );
+};
+
+const leaderboardScoreCreate = ({
+  leaderboardId = faker.number.int(),
+  body,
+  method = "PUT",
+}: { leaderboardId?: number; body?: any; method?: string } = {}) => {
+  return fetch(`http://localhost:8081/api/leaderboard/${leaderboardId}/score`, {
     body: JSON.stringify(body),
     method,
     headers: {
@@ -109,4 +138,204 @@ test("create leaderboard repeat is an update", async () => {
     Date.parse(json.lastModified)
   );
   expect(json2.leaderboardId).toEqual(json.leaderboardId);
+});
+
+test("get leaderboard score laederboard dne", async () => {
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await leaderboardScoreGet({ accountId });
+  expect(response.status).toEqual(204);
+});
+
+test("get leaderboard score account id dne", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+
+  const response = await leaderboardScoreGet({
+    leaderboardId: lbJson.leaderboardId,
+  });
+  expect(response.status).toEqual(204);
+});
+
+test("get leaderboard score dne", async () => {
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+
+  const response = await leaderboardScoreGet({
+    leaderboardId: lbJson.leaderboardId,
+    accountId,
+  });
+  expect(response.status).toEqual(204);
+});
+
+test("create leaderboard score no admin key", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await fetch(
+    `http://localhost:8081/api/leaderboard/${leaderboardId}/score`,
+    {
+      body: JSON.stringify({ accountId }),
+      method: "PUT",
+    }
+  );
+  expect(response.status).toEqual(403);
+});
+
+test("create leaderboard score bad method", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId },
+    method: "DELETE",
+  });
+  expect(response.status).toEqual(405);
+});
+
+test("create leaderboard score bad body", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: accountId,
+  });
+  expect(response.status).toEqual(400);
+});
+
+test("create leaderboard score leaderboard dne", async () => {
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId: 999999999,
+    body: { accountId },
+  });
+  expect(response.status).toEqual(400);
+});
+
+test("create leaderboard score no account id", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: {},
+  });
+  expect(response.status).toEqual(400);
+});
+
+test("create leaderboard score account dne", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId: faker.string.uuid() },
+  });
+  expect(response.status).toEqual(400);
+});
+
+test("create leaderboard score no score", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId },
+  });
+  expect(response.status).toEqual(201);
+
+  const json = await response.json();
+  expect(json.leaderboardId).toEqual(leaderboardId);
+  expect(json.accountId).toEqual(accountId);
+  expect(json.score).toEqual(-1);
+});
+
+test("create leaderboard score with score", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  const score = 12345;
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId, score },
+  });
+  expect(response.status).toEqual(201);
+
+  const json = await response.json();
+  expect(json.leaderboardId).toEqual(leaderboardId);
+  expect(json.accountId).toEqual(accountId);
+  expect(json.score).toEqual(score);
+});
+
+test("create leaderboard score repeat is update", async () => {
+  const lbResponse = await leaderboardCreate();
+  const lbJson = await lbResponse.json();
+  const leaderboardId = lbJson.leaderboardId;
+
+  const accountId = faker.string.uuid().replace(/^.{4}/, "2000");
+  await playerCreate({
+    accountId,
+  });
+
+  await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId, score: 1234 },
+  });
+
+  const score = 12345;
+  const response = await leaderboardScoreCreate({
+    leaderboardId,
+    body: { accountId, score },
+  });
+
+  const json = await response.json();
+  expect(json.leaderboardId).toEqual(leaderboardId);
+  expect(json.accountId).toEqual(accountId);
+  expect(json.score).toEqual(score);
 });

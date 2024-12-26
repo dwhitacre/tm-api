@@ -1,5 +1,12 @@
-import { expect, test, setSystemTime, beforeEach, afterAll } from "bun:test";
-import Leaderboard from "./leaderboard";
+import {
+  expect,
+  test,
+  setSystemTime,
+  beforeEach,
+  afterAll,
+  describe,
+} from "bun:test";
+import Leaderboard, { LeaderboardScore } from "./leaderboard";
 import type { JsonObject } from "./json";
 
 beforeEach(() => setSystemTime());
@@ -8,11 +15,11 @@ afterAll(() => setSystemTime());
 test("should construct with defaults", () => {
   const date = new Date(123);
   setSystemTime(date);
-  const player = new Leaderboard();
+  const leaderboard = new Leaderboard();
 
-  expect(player.leaderboardId).toEqual("-1");
-  expect(player.name).toEqual("");
-  expect(player.lastModified).toEqual(date);
+  expect(leaderboard.leaderboardId).toEqual("-1");
+  expect(leaderboard.name).toEqual("");
+  expect(leaderboard.lastModified).toEqual(date);
 });
 
 test.each([
@@ -45,4 +52,39 @@ test.each([
 test.each([null, undefined])("should throw fromJson", (json: unknown) => {
   setSystemTime(new Date());
   expect(() => Leaderboard.fromJson(json as JsonObject)).toThrowError();
+});
+
+test("should construct score with defaults", () => {
+  const leaderboardScore = new LeaderboardScore("123", "234");
+
+  expect(leaderboardScore.leaderboardId).toEqual("123");
+  expect(leaderboardScore.accountId).toEqual("234");
+  expect(leaderboardScore.score).toEqual(-1);
+});
+
+test.each([
+  [
+    { leaderboardId: "123", accountId: "234" },
+    { leaderboardId: "123", accountId: "234", score: -1 },
+  ],
+  [
+    { leaderboardId: "123", accountId: "234", score: 345 },
+    { leaderboardId: "123", accountId: "234", score: 345 },
+  ],
+])("should create score fromJson", (json: JsonObject, expected: JsonObject) => {
+  const leaderboardScore = LeaderboardScore.fromJson(json);
+
+  expect(leaderboardScore.leaderboardId).toEqual(expected.leaderboardId);
+  expect(leaderboardScore.accountId).toEqual(expected.accountId);
+  expect(leaderboardScore.score).toEqual(expected.score);
+});
+
+test.each([
+  null,
+  undefined,
+  {},
+  { leaderboardId: "123" },
+  { accountId: "234" },
+])("should throw fromJson", (json: unknown) => {
+  expect(() => LeaderboardScore.fromJson(json as JsonObject)).toThrowError();
 });

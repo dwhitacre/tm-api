@@ -13,6 +13,10 @@ function getHandle(req: ApiRequest): (req: ApiRequest) => Promise<ApiResponse> {
   if (req.checkPath("/api/player/{accountId}")) return player.pathParamHandle;
   if (req.checkPath("/api/player")) return player.handle;
 
+  if (req.checkPath("/api/leaderboard/{leaderboardId}/score/{accountId}"))
+    return leaderboard.scorePathParamHandle;
+  if (req.checkPath("/api/leaderboard/{leaderboardId}/score"))
+    return leaderboard.scoreHandle;
   if (req.checkPath("/api/leaderboard/{leaderboardId}"))
     return leaderboard.pathParamHandle;
   if (req.checkPath("/api/leaderboard")) return leaderboard.handle;
