@@ -1,54 +1,12 @@
 import { expect, test } from "bun:test";
 import { faker } from "@faker-js/faker";
-import { playerCreate } from "./player.test";
-
-const leaderboardGet = (leaderboardId: string) => {
-  return fetch(`http://localhost:8081/api/leaderboard/${leaderboardId}`);
-};
-
-const leaderboardCreate = ({
-  body = {},
-  method = "PUT",
-}: {
-  body?: any;
-  method?: string;
-} = {}) => {
-  return fetch("http://localhost:8081/api/leaderboard", {
-    body: JSON.stringify(body),
-    method,
-    headers: {
-      "x-api-key": "developer-test-key",
-    },
-  });
-};
-
-const leaderboardScoreGet = ({
-  leaderboardId = 999999999,
-  accountId = faker.string.uuid(),
-}: {
-  leaderboardId?: number;
-  accountId?: string;
-  body?: any;
-  method?: string;
-} = {}) => {
-  return fetch(
-    `http://localhost:8081/api/leaderboard/${leaderboardId}/score/${accountId}`
-  );
-};
-
-const leaderboardScoreCreate = ({
-  leaderboardId = faker.number.int(),
-  body,
-  method = "PUT",
-}: { leaderboardId?: number; body?: any; method?: string } = {}) => {
-  return fetch(`http://localhost:8081/api/leaderboard/${leaderboardId}/score`, {
-    body: JSON.stringify(body),
-    method,
-    headers: {
-      "x-api-key": "developer-test-key",
-    },
-  });
-};
+import {
+  leaderboardCreate,
+  leaderboardGet,
+  leaderboardScoreCreate,
+  leaderboardScoreGet,
+  playerCreate,
+} from "./api";
 
 test("get leaderboard dne", async () => {
   const response = await leaderboardGet("000");

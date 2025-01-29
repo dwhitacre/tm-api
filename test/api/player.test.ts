@@ -1,47 +1,6 @@
 import { expect, test } from "bun:test";
 import { faker } from "@faker-js/faker";
-
-const playerGet = (accountId: string) => {
-  return fetch(`http://localhost:8081/api/player/${accountId}`);
-};
-
-export const playerCreate = ({
-  accountId = faker.string.uuid(),
-  body,
-  method = "PUT",
-}: {
-  accountId?: string;
-  body?: any;
-  method?: string;
-} = {}) => {
-  return fetch("http://localhost:8081/api/player", {
-    body: JSON.stringify(body ?? { accountId }),
-    method,
-    headers: {
-      "x-api-key": "developer-test-key",
-    },
-  });
-};
-
-const playerOverride = ({
-  accountId = faker.string.uuid(),
-  body,
-  method = "POST",
-  overrides = {},
-}: {
-  accountId?: string;
-  body?: any;
-  method?: string;
-  overrides?: any;
-} = {}) => {
-  return fetch("http://localhost:8081/api/player", {
-    body: JSON.stringify(body ?? { accountId, ...overrides }),
-    method,
-    headers: {
-      "x-api-key": "developer-test-key",
-    },
-  });
-};
+import { playerCreate, playerGet, playerOverride } from "./api";
 
 test("get player dne", async () => {
   const response = await playerGet("000");
