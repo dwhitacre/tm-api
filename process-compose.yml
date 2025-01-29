@@ -20,13 +20,3 @@ processes:
     command: docker compose up tmiosim
     shutdown:
       command: docker compose stop tmiosim
-  # unit:
-  #   working_dir: api
-  #   command: bun run test
-  # test:
-  #   working_dir: test
-  #   command: bun test --watch
-  #   depends_on:
-  #     api:
-  #     db:
-  #     tmiosim:
