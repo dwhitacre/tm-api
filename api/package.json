@@ -3,11 +3,11 @@
   "module": "index.ts",
   "private": true,
   "devDependencies": {
-    "@types/bun": "^1.1.7",
-    "@types/pg": "^8.11.6"
+    "@types/bun": "^1.2.1",
+    "@types/pg": "^8.11.11"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.7.2"
   },
   "scripts": {
     "start": "bun run index.ts",
@@ -17,6 +17,6 @@
   },
   "type": "module",
   "dependencies": {
-    "pg": "^8.12.0"
+    "pg": "^8.13.1"
   }
 }
